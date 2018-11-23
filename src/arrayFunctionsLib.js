@@ -20,19 +20,26 @@ const filter = function(predicate, list) {
 
 exports.filter = filter;
 
-const reduce = function(reducer, list, accumulator) {
-  if (list.length == 1) {
-    if (accumulator != undefined) {
-      return reducer(accumulator,list[0]);
+const generateSafeReducer = function(reducer) {
+  return function(accumulator, ele) {
+    if (accumulator == undefined) {
+      return ele;
     }
-    return list[0];
+    return reducer(accumulator, ele);
+  };
+};
+
+const reduce = function(reducer, list, accumulator) {
+  if (list.length == 0) {
+    return accumulator;
   }
 
-  return reducer(
-    reduce(reducer, list.slice(0, list.length -1),accumulator),
-    list[list.length-1]
+  let safeReducer = generateSafeReducer(reducer);
+  let length = list.length;
+  return safeReducer(
+    accumulator,
+    reduce(reducer, list.slice(1, length), list[0]),
   );
 };
 
 exports.reduce = reduce;
-
